@@ -43,6 +43,13 @@ SAT_SOLVERS = {
     "sm_tij": "Minimize_makespan_SM_Ti,j.py",
 }
 
+# E** (= E+ in paper) uses dedicated solver scripts that hard-code the arc set.
+SAT_SOLVERS_ESTARSTAR = {
+    "origin": "Minimize_makespan_origin_E2star.py",
+    "sm": "Minimize_makespan_SM_E2star.py",
+    "sm_tij": "Minimize_makespan_SM_Ti,j_E2star.py",
+}
+
 MAIN_FAMILIES = {
     "BOWMAN",
     "BUXEY",
@@ -356,7 +363,12 @@ def write_schedule_witness(
                 witness["proof"] = {"status": "BOUND_MATCH", "bound": cycle}
 
     directory.mkdir(parents=True, exist_ok=True)
-    edge_label = "estar" if edge_set == "E*" else "e"
+    if edge_set == "E**":
+        edge_label = "estarstar"
+    elif edge_set == "E*":
+        edge_label = "estar"
+    else:
+        edge_label = "e"
     path = directory / f"{instance.name}__m{instance.m}__{threshold}__{solver}__{edge_label}.json"
     path.write_text(json.dumps(witness, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
@@ -446,6 +458,16 @@ def solver_command(
     edge_set: str,
 ) -> list[str]:
     if solver in SAT_SOLVERS:
+        if edge_set == "E**":
+            script = SAT_SOLVERS_ESTARSTAR[solver]
+            # E** solvers hard-code the arc set; no edge_set argument needed
+            return [
+                sys.executable,
+                "-u",
+                str(ROOT / threshold_dir / script),
+                instance.name,
+                str(instance.m),
+            ]
         return [
             sys.executable,
             "-u",
@@ -563,8 +585,8 @@ def main() -> int:
     if not thresholds or unknown_thresholds:
         parser.error(f"unknown thresholds: {', '.join(sorted(unknown_thresholds)) or '(none selected)'}")
     edge_sets = [item.strip().upper() for item in args.edge_sets.split(",") if item.strip()]
-    if not edge_sets or any(item not in {"E", "E*"} for item in edge_sets):
-        parser.error("--edge-sets accepts only E and E*")
+    if not edge_sets or any(item not in {"E", "E*", "E**"} for item in edge_sets):
+        parser.error("--edge-sets accepts only E, E*, and E**")
     result_path = Path(args.results).resolve()
     event_path = Path(args.event_log).resolve()
     if not args.dry_run:
@@ -587,7 +609,7 @@ def main() -> int:
                 for edge_set in solver_edge_sets:
                     run_id = (
                         f"{instance.name}__m{instance.m}__{threshold}__{solver}__"
-                        f"{'estar' if edge_set == 'E*' else 'e'}"
+                        f"{'estarstar' if edge_set == 'E**' else ('estar' if edge_set == 'E*' else 'e')}"
                     )
                     if args.resume and run_id in completed_run_ids:
                         print(f"Skipping completed run_id: {run_id}")
