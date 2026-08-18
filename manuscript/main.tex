@@ -646,7 +646,7 @@ Scholl SALBP-1 feasible $c$ + workload LB & 2 & $\lceil\sum_i t_i/m\rceil = c$ \
 \end{threeparttable}
 \end{table}
 
-The experiments vary three factors: the peak power limit ($Q_{\max}^{\mathrm{top}}$ or $Q_{\max}^{\mathrm{avg}}$), the cycle-time search strategy (Direct or Two-phase), and the non-overlap encoding (Prior CSE, SM, or SM-T on $E$ or $E^+$). Prior CSE denotes the compact CSE-14 non-overlap encoding \citep{VanKieu2025Compact} and serves as the baseline formulation. The choices of $E/E^+$ and Prior CSE/SM/SM-T alter the SAT formulation without affecting the analytical bounds. Table~\ref{tab:sat-configurations} lists all tested combinations.
+The experiments vary three factors: the peak power limit ($Q_{\max}^{\mathrm{top}}$ or $Q_{\max}^{\mathrm{avg}}$), the cycle-time search strategy (Direct or Two-phase), and the non-overlap encoding (Prior CSE, SM, or SM-T). Both search strategies are tested on the original edge set $E$; the sparse augmentation $E^+$ is evaluated separately under Direct search only. Prior CSE denotes the compact CSE-14 non-overlap encoding \citep{VanKieu2025Compact} and serves as the baseline formulation. Table~\ref{tab:sat-configurations} lists all tested configurations.
 
 \begin{table}[t!]
 \centering
